@@ -1,7 +1,8 @@
-package com.example.sportsrecordapp
+package com.example.sportsrecordapp.local.ui.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.sportsrecordapp.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
