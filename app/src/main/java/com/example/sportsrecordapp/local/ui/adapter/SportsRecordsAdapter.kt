@@ -9,16 +9,21 @@ import com.example.sportsrecordapp.local.model.SportEventResult
 class SportsRecordsAdapter(private val sportEventResults: List<SportEventResult>) :
     RecyclerView.Adapter<SportsRecordsAdapter.ViewHolder>() {
 
-    class ViewHolder(private val itemBinding: ItemSportEventBinding) : RecyclerView.ViewHolder(itemBinding.root) {
+    class ViewHolder(private val itemBinding: ItemSportEventBinding) :
+        RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(sportEventResult: SportEventResult) {
             with(itemBinding) {
-                temporalText.text = sportEventResult.winner
+                date.text = sportEventResult.publicationDate
+                sport.text = sportEventResult.sportType.displayValue
+                eventSummary.text =
+                    "${sportEventResult.winner} won the ${sportEventResult.tournament}${if (!sportEventResult.looser.isNullOrEmpty()) " aganist " + sportEventResult.looser else ""}"
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val itemBinding = ItemSportEventBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val itemBinding =
+            ItemSportEventBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(itemBinding)
     }
 

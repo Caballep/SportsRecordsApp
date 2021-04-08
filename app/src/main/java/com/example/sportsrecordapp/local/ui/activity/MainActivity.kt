@@ -6,10 +6,12 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.sportsrecordapp.R
 import com.example.sportsrecordapp.databinding.ActivityMainBinding
+import com.example.sportsrecordapp.local.model.SportEventResult
 import com.example.sportsrecordapp.local.model.SportType
 import com.example.sportsrecordapp.local.ui.adapter.SportsRecordsAdapter
 import com.example.sportsrecordapp.local.ui.viewmodel.MainViewModel
@@ -34,7 +36,6 @@ class MainActivity : AppCompatActivity() {
         setViews()
 
         setMainStateCollector()
-        mainViewModel.fetchSportsRecords()
     }
 
     private fun setMainStateCollector() {
@@ -43,14 +44,17 @@ class MainActivity : AppCompatActivity() {
                 with(binding) {
                     when (state) {
                         is MainState.SUCCESS -> {
-                            sportsRecycler.adapter = SportsRecordsAdapter(state.sportEventResult)
-                            // sportTypeSpinner.setSelection(0)
+                            if (!state.sportEventResult.isNullOrEmpty()) {
+                                setSuccessResultViews(state.sportEventResult)
+                            } else {
+                                setEmptyOrNullResultViews()
+                            }
                         }
                         is MainState.ERROR -> {
-                            //textTextView.text = state.message
+                            setErrorResultViews(state.message)
                         }
                         is MainState.LOADING -> {
-                            //textTextView.text = "Loading..."
+                            setLoadingResultViews()
                         }
                         else -> {
                             // BLANK or any other unhandled state
@@ -83,9 +87,58 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            sportsRecycler.apply {
-                sportsRecycler.layoutManager = LinearLayoutManager(this@MainActivity)
+
+            sportsRecycler.layoutManager = LinearLayoutManager(this@MainActivity)
+
+            dataFetcherButton.setOnClickListener {
+                mainViewModel.fetchSportsRecords()
             }
+        }
+    }
+
+    private fun setSuccessResultViews(sportEventResults: List<SportEventResult>) {
+        with(binding) {
+            sportsRecycler.adapter = SportsRecordsAdapter(sportEventResults)
+            sportsRecycler.isVisible = true
+            sportTextView.isVisible = true
+            sportTypeSpinner.isVisible = true
+            dataFetcherButton.isVisible = false
+            screenStateText.isVisible = false
+        }
+    }
+
+    private fun setEmptyOrNullResultViews() {
+        with(binding) {
+            sportsRecycler.isVisible = false
+            sportTextView.isVisible = false
+            sportTypeSpinner.isVisible = false
+            dataFetcherButton.isVisible = true
+            screenStateText.isVisible = true
+            screenStateText.text = "Nothing found, try again!"
+        }
+    }
+
+    private fun setErrorResultViews(errorMessage: String?) {
+        with(binding) {
+            sportsRecycler.isVisible = false
+            sportTextView.isVisible = false
+            sportTypeSpinner.isVisible = false
+            dataFetcherButton.isVisible = true
+            screenStateText.isVisible = true
+            screenStateText.text = errorMessage
+        }
+    }
+
+    private fun setLoadingResultViews() {
+        with(binding) {
+            sportsRecycler.isVisible = false
+            sportTextView.isVisible = false
+            sportTypeSpinner.isVisible = false
+            dataFetcherButton.isVisible = true
+            dataFetcherButton.alpha = 0.5f
+            dataFetcherButton.isClickable = false
+            screenStateText.isVisible = true
+            screenStateText.text = "Loading..."
         }
     }
 }
