@@ -2,11 +2,16 @@ package com.example.sportsrecordapp.local.ui.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.TextView
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.sportsrecordapp.R
 import com.example.sportsrecordapp.databinding.ActivityMainBinding
+import com.example.sportsrecordapp.local.model.SportType
+import com.example.sportsrecordapp.local.ui.adapter.SportsRecordsAdapter
 import com.example.sportsrecordapp.local.ui.viewmodel.MainViewModel
 import com.example.sportsrecordapp.local.ui.viewmodel.MainViewModel.MainState
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,8 +28,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setViews()
+
         setMainStateCollector()
         mainViewModel.fetchSportsRecords()
     }
@@ -35,19 +43,48 @@ class MainActivity : AppCompatActivity() {
                 with(binding) {
                     when (state) {
                         is MainState.SUCCESS -> {
-                            textTextView.text = state.sportEventResult.first().winner
+                            sportsRecycler.adapter = SportsRecordsAdapter(state.sportEventResult)
+                            // sportTypeSpinner.setSelection(0)
                         }
                         is MainState.ERROR -> {
-                            textTextView.text = state.message
+                            //textTextView.text = state.message
                         }
                         is MainState.LOADING -> {
-                            textTextView.text = "Loading..."
+                            //textTextView.text = "Loading..."
                         }
                         else -> {
                             // BLANK or any other unhandled state
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun setViews() {
+        with(binding) {
+            sportTypeSpinner.apply {
+                adapter = ArrayAdapter<SportType>(
+                    this@MainActivity,
+                    android.R.layout.simple_list_item_1,
+                    SportType.values()
+                )
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        mainViewModel.filterSportsRecords(
+                            sportTypeSpinner.selectedItem as SportType
+                        )
+                    }
+                }
+            }
+            sportsRecycler.apply {
+                sportsRecycler.layoutManager = LinearLayoutManager(this@MainActivity)
             }
         }
     }

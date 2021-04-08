@@ -4,6 +4,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sportsrecordapp.local.model.SportEventResult
+import com.example.sportsrecordapp.local.model.SportType
 import com.example.sportsrecordapp.local.repository.SportsRecordsRepo
 import com.example.sportsrecordapp.network.entity.toSportEventsResultList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,6 +21,9 @@ class MainViewModel @ViewModelInject constructor(
     val mainState: StateFlow<MainState>
         get() = mutableMainState
 
+    private var allSportsRecords = mutableListOf<SportEventResult>()
+    private var filteredSportsRecords = mutableListOf<SportEventResult>()
+
     fun fetchSportsRecords() {
         viewModelScope.launch {
             sportsRecordsRepo.getSportsRecords().onStart {
@@ -30,7 +34,21 @@ class MainViewModel @ViewModelInject constructor(
                     mutableMainState.value = MainState.ERROR(it)
                 }
             }.collect {
-                mutableMainState.value = MainState.SUCCESS(it.toSportEventsResultList())
+                allSportsRecords = it.toSportEventsResultList().toMutableList()
+                mutableMainState.value = MainState.SUCCESS(allSportsRecords)
+            }
+        }
+    }
+
+    fun filterSportsRecords(sportType: SportType) {
+        if (allSportsRecords.isNotEmpty()) {
+            if (sportType == SportType.ALL) {
+                mutableMainState.value = MainState.SUCCESS(allSportsRecords)
+            } else {
+                filteredSportsRecords = allSportsRecords.filter {
+                    it.sportType == sportType
+                }.toMutableList()
+                mutableMainState.value = MainState.SUCCESS(filteredSportsRecords)
             }
         }
     }

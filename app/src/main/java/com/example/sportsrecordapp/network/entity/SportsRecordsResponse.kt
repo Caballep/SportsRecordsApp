@@ -2,10 +2,12 @@ package com.example.sportsrecordapp.network.entity
 
 import com.example.sportsrecordapp.local.model.SportEventResult
 import com.example.sportsrecordapp.local.model.SportType
+import com.google.gson.annotations.SerializedName
 
 class SportsRecordsResponse(
     val f1Results: List<F1Result>?,
     val nbaResults: List<NbaResult>?,
+    @SerializedName("Tennis")
     val tennis: List<Tennis>?
 ) {
     data class F1Result(
